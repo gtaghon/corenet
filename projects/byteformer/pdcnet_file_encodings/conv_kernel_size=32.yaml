@@ -1,0 +1,51 @@
+dataset:
+  root_train: /path/to/pdc/training/files
+  root_val: /path/to/pdc/validation/files
+  name: pdc_protein_classification
+  category: classification
+  train_batch_size0: 32  # Adjust based on PDC file sizes and available memory
+  val_batch_size0: 32
+  eval_batch_size0: 32
+  workers: 10
+  persistent_workers: true
+  pin_memory: true
+  collate_fn_name_train: byteformer_pdc_collate_fn
+  collate_fn_name_val: byteformer_pdc_collate_fn
+  collate_fn_name_test: byteformer_pdc_collate_fn
+pdc_augmentation:
+  enable: true
+  rotation_max_angle: 360  # maximum rotation angle in degrees
+  translation_std: 5  # standard deviation for translation in Angstroms
+sampler:
+  name: batch_sampler
+  bs:
+    max_file_size: 1048576  # Adjust based on your PDC file sizes
+model:
+  classification:
+    name: byteformer
+    n_classes: 1024  # Set this to your number of classes
+    byteformer:
+      mode: tiny
+      max_num_tokens: 100000  # Increase this if PDC files are larger
+      conv_kernel_size: 32
+      window_sizes:
+      - 128
+      - 256  # Add larger window sizes if needed for longer sequences
+scheduler:
+  name: cosine
+  is_iteration_based: false
+  max_epochs: 100  # Adjust based on your dataset size and convergence
+  warmup_iterations: 5000
+  warmup_init_lr: 1.0e-06
+  cosine:
+    max_lr: 0.0005
+    min_lr: 1.0e-05
+stats:
+  val:
+  - loss
+  - top1
+  - top5
+  train:
+  - loss
+  checkpoint_metric: top1
+  checkpoint_metric_max: true
